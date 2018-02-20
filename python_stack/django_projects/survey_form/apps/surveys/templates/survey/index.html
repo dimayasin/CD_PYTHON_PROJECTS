@@ -9,6 +9,7 @@
         <div id="container1">
             <table>
             <form action="/process" method="post">
+                {% csrf_token %}
                <tr> <td><label>Your Name:</label></td>
                 <td><input type="text" name="name" /></td></tr>
                 <tr><td>

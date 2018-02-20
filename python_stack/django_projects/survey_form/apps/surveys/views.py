@@ -4,21 +4,26 @@ from __future__ import unicode_literals
 from django.shortcuts import render, HttpResponse, redirect
 
 # Create your views here.
+
+
 def index(request):
-  # if not 'number' in session:
-  #       session['name'] = ""
-  #       session['location'] = ""
-  #       session['language'] = ""
-  #       session['comment'] = ""
- 
-  return render(request,'survey/index.html')
+    if not 'gold' in request.session:
+        request.session['gold'] = 0
+        request.session['msg'] = ""
+
+    return render(request, 'ninja/index.html')
+
 
 def process(request):
-  context = {
-  "name": request.form['name'],
-  "location":request.form['location'],
-  "language":request.form['language'],
-  "comment":request.form['comment']
+    timer = request.session['counter']
+    timer += 1
+    request.session['counter'] = timer
+    context = {
+        'name': request.POST['name'],
+        'location': request.POST['location'],
+        'language': request.POST['language'],
+        'comment': request.POST['comment'],
+        'counter': request.session['counter']
     }
 
-  return render(request,"survey/results.html", context)
+    return render(request, "survey/results.html", context)
