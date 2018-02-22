@@ -9,6 +9,7 @@ from .models import Users
 
 def index(request):
     users = Users.objects.all()
+    request.session.clear()    
     context ={
         'users': users
     }
@@ -21,7 +22,11 @@ def logins(request):
             messages.error(request,error)
         return redirect("/")
     else:
-        return render(request,"users/success.html")
+        users = Users.objects.filter(email = request.POST['email'])
+        context={
+            'users': users
+        }
+        return render(request,"users/success.html", context)
 
 def Registration(request):
     errors = Users.objects.validateRegistrationData(request.POST)
@@ -32,4 +37,8 @@ def Registration(request):
     else:
         hasher1 = bcrypt.hashpw(request.POST['psswrd'].encode(), bcrypt.gensalt())
         Users.objects.create( first_name=request.POST['first_name'],last_name=request.POST['last_name'],email=request.POST['email'], password=hasher1)
-        return render(request,"users/success.html")
+        users = Users.objects.filter(email = request.POST['email'])
+        context={
+            'users': users
+        }
+        return render(request,"users/success.html", context)

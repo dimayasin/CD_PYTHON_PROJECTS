@@ -2,10 +2,19 @@
 
 <head>
     <title>Login & Registration Page</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}" media="screen" title="no title" charset="utf-8">
+
 </head>
 
 <body>
-    <h1>SUCCESS!!</h1>
-    <a href="/">Go Home</a>
-    </body>
-    </html>
+    <div id="heading"><a id="left" href="/">Go Home</a><a href="/" id="right">Log Out</a> </div>
+    <div id="container">
+        <h1>SUCCESS!!</h1>
+        <h1>Welcome {{first_name}}</h1>
+        
+
+    </div>
+</body>
+
+</html>
