@@ -9,7 +9,7 @@ from .models import Users
 
 def index(request):
     users = Users.objects.all()
-
+    request.session.clear()    
     context ={
         'users': users
     }

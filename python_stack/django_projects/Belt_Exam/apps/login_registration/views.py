@@ -9,11 +9,10 @@ from .models import Users
 
 def index(request):
     users = Users.objects.all()
-
     context ={
         'users': users
     }
-    return render(request,"users/index.html", context)
+    return render(request,"belt/index.html", context)
 
 def logins(request):
     errors = Users.objects.validateLoginData(request.POST)
@@ -26,7 +25,8 @@ def logins(request):
         context={
             'users': users
         }
-        return render(request,"users/success.html", context)
+        # request.session['first_name']=request.POST['first_name']
+        return render(request,"belt/success.html", context)
 
 def Registration(request):
     errors = Users.objects.validateRegistrationData(request.POST)
@@ -41,4 +41,8 @@ def Registration(request):
         context={
             'users': users
         }
-        return render(request,"users/success.html", context)
+        return render(request,"belt/success.html", context)
+
+def out(request):
+    request.session.clear()    
+    return redirect("/")
