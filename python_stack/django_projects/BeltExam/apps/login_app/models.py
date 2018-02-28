@@ -13,10 +13,15 @@ USER_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+$')
 class UsersManager(models.Manager):
     def validateRegistrationData(self, postData):
         errors = []
+        mytime=datetime.datetime.strptime(postData['date'], '%Y-%m-%d').date()
+        time2 = datetime.datetime.today().date()
         if len(postData['name']) < 2:
             errors.append("User name should be more than 2 characters")
         if not NAME_REGEX.match(postData["name"]):
             errors.append( "User name should contain letters only!")
+        if mytime >= time2 :
+            errors.append("Birth date shouldn't be a current or future date.")
+        
         
         if  not EMAIL_REGEX.match(postData['email']) or not re.search(r"^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$",postData['email']):
             errors.append( "Invalid Email Address.")
@@ -54,10 +59,17 @@ class UsersManager(models.Manager):
 
 class PostsManager(models.Manager):
     def ValidatePosts(self, postData):
+        mytime=datetime.datetime.strptime(postData['date'], '%Y-%m-%d').date()
+        time2 = datetime.datetime.today().date()
         errors=[]
-        if not postData['task'] or not postData['status'] or not postData['date'] or not postData['time']:
+        if not postData['task'] or not postData['date'] or not postData['time']:
             errors.append("All field should have values.")  
-        if postData['date'] <  datetime.date.today :
+        # if datetime.datetime.strptime(postData['date'], '%Y-%M-%d') <  datetime.datetime.today() :
+        if  mytime < time2 :
+            print mytime
+            print time2
+            print type (postData['date'])
+            # print str(datetime.datetime.strptime(postData['date'], '%Y-%M-%d'))        
             errors.append("Appointment date should be a current or future date.")
         return errors
     
@@ -73,5 +85,5 @@ class Posts(models.Model):
     time = models.CharField(max_length=5)
     status = models.CharField(max_length=100)
     date = models.DateField(default=datetime.date.today)
-    user = models.ForeignKey(Users, related_name="posts")
+    user = models.ForeignKey(Users, related_name="user_post")
     objects = PostsManager()

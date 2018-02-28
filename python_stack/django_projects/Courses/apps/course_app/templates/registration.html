@@ -4,7 +4,6 @@
     <title>Login & Registration Page</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'style.css' %}" media="screen" title="no title" charset="utf-8">
-
 </head>
 
 <body>
@@ -15,43 +14,39 @@
             {% endfor %}
     </ul>
     {% endif %}
-    <h3><a href="/show">Dashboard</a> | <a href="/out">Logout</a></h3>
-    <h1>Welcome {{users.name}}</h1>
-    <form action="/update" method="POST">
+    <h1>Registration</h1>
+    <form action="/create" method="POST">
         {% csrf_token %}
         <table>
             <tr>
-                <td>Task:</td>
+                <td>Name:</td>
                 <td>
-                    <input type="text" name="task" value="{{posts.task}}"/>
+                    <input type="text" name="name" />
                 </td>
             </tr>
             <tr>
-                <td>Status:</td>
+                <td>Email:</td>
                 <td>
-                    <select name="status" value="{{posts.status}}">
-                        <option>Done</option>
-                        <option>Missed</option>
-                        <option>Pending</option>
-                    </select>
+                    <input type="email" name="email" />
                 </td>
             </tr>
             <tr>
-                <td>Date:</td>
+                <td>Password:</td>
                 <td>
-                    <input type="date" name="date" value="{{posts.date}}" />
+                    <input type="password" name="psswrd" />
                 </td>
             </tr>
             <tr>
-                <td>Time:</td>
+                <td>Confirm Password:</td>
                 <td>
-                    <input type="time" name="time" value="{{posts.time}}"  />
+                    <input type="password" name="cpsswrd" />
                 </td>
             </tr>
+
             <tr>
                 <td></td>
                 <td>
-                    <input type="submit" value="Update" />
+                    <input type="submit" value="Register" />
                 </td>
             </tr>
 

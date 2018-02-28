@@ -5,13 +5,16 @@ from django.contrib import messages
 import bcrypt
 from .models import Users
 from .models import Posts
+import datetime
 
 secret_key = 'TARDIS' 
 
 
 def index(request):
     users = Users.objects.all()
-    # request.session['name'] = ""
+    request.session['name'] = ""
+    request.session['id']=0
+    request.session['post_id'] = 0
 
     context ={
         'users': users
@@ -26,79 +29,129 @@ def logins(request):
     if len(errors)>0:
         for error in errors:
             messages.error(request,error)
-        return redirect("/login")
+        return render(request,"login.html")
     else:
-        users = Users.objects.filter(email = request.POST['email'])
+ 
+        users = Users.objects.filter(email = request.POST['email'])[0]
+        request.session['id'] = users.id
+        request.session['name'] = users.name 
+
         context={
             'users': users
         }
-        return redirect("/show"+id)
+        return redirect("/show", context)
 
 def Registration(request):
     errors = Users.objects.validateRegistrationData(request.POST)
     if len(errors)>0:
         for error in errors:
             messages.error(request,error)
-        return render(request,"/new_user")
+        return render(request,"registration.html")
     else:
         hasher1 = bcrypt.hashpw(request.POST['psswrd'].encode(), bcrypt.gensalt())
-        Users.objects.create( name=request.POST['name'],email=request.POST['email'], password=hasher1, DOB= request.POST['dob'])
-        users = Users.objects.filter(email = request.POST['email'])
+        Users.objects.create( 
+            name=request.POST['name'],
+            email=request.POST['email'], 
+            password=hasher1, 
+            DOB= datetime.datetime.strptime(request.POST['DOB'], '%Y-%m-%d'))
+        users = Users.objects.filter(email = request.POST['email'])[0]
         context={
             'users': users
         }
-        # request.session['id'] = users[0].id
-        # request.session['name'] = users[0].name 
+        request.session['id'] = users.id
+        request.session['name'] = users.name 
 
-        return render(request,"appt_form.html", context)
+        return redirect("/show", context)
 
 def new_user(request):
     return render(request,"registration.html")
 
 def Newappointments(request):
-    user = Users.objects.filter(id=id)
-    this_user = user[0]
+
     errors = Posts.objects.ValidatePosts(request.POST)
+    # print str(request.POST['date'])
+    # print str (datetime.date.today())
+
     if len (errors)>0:
-        for error in errors:
+        for error in errors:   
             messages.error(request,error)
-        return render(request,"/show"+id)
+        return render(request,"add_appt.html")
     else:
 
-        Posts.objects.create( name=request.POST['task'],time=request.POST['time'], status="Pending", date= request.POST['date'], user= request.session['id'])
-        posting = Posts.objects.filter(user = id )
+        Posts.objects.create( 
+            task=request.POST['task'],
+            time=request.POST['time'], 
+            status='Pending', 
+            date= datetime.datetime.strptime(request.POST['date'], '%Y-%m-%d'), 
+            user_id= request.session['id']
+        )
+        posting = Posts.objects.filter(user_id = request.session['id'])
+        # request.session['id'] = user.id
+        # request.session['name'] = user.name
         context={
             'posts': posting
         }
-        return redirect("/show"+id)
+        return redirect("/show", context)
 
-def update(request,id):
-    posts = Posts.objects.filter(id=id)
+def update(request):
+    # request.session['post_id'] = id
+    posts = Posts.objects.filter(id=request.session['post_id'])
     edit_post = posts[0]
-    if request.POST['task']:
+    if not request.POST['task'] == edit_post.task:
         edit_post.task = request.POST['task']
         edit_post.save()
-    if request.POST['status']:
+    if not request.POST['status'] == "Select a Status":
         edit_post.status = request.POST['status']
         edit_post.save()
-    if request.POST['date']:
-        edit_post.date = request.POST['date']
+    if not datetime.datetime.strptime(request.POST['date'], '%Y-%m-%d') == datetime.datetime.strptime(edit_post.date, '%Y-%m-%d'):
+        edit_post.date = datetime.datetime.strptime(request.POST['date'], '%Y-%m-%d')
         edit_post.save()
-    if request.POST['time']:
+    if not request.POST['time'] == edit_post.time:
         edit_post.time = request.POST['time']
         edit_post.save()
 
-    return redirect("/show"+id)
+    return redirect("/show")
 
-def delete(request, id):
-    Users.objects.filter(id=id).delete()
-    return redirect("/show"+id)
+def delete(request):
+    Users.objects.filter(id=request.session['id']).delete()
+    return redirect("/show")
 
-def out(request,id):
+def out(request):
     request.session.clear()
-    return redirect ("/login")
-
-def show(request,id):
+    return redirect ("/log")
+def add(request):
+    users = Users.objects.filter(id = request.session['id'])
+    # users = myusers[0]
     context={
-        "posts": Posts.objects.all(user = id)}
-    return render(request, "appointment.html", context)
+        'users': users
+        }
+    
+    return render(request,"add_appt.html", context)
+
+def show(request):
+    ShowToday = []
+    ShowFuture = []
+    show_posts = Posts.objects.filter(user_id = request.session['id'])
+    for val in show_posts:
+        # if datetime.datetime.strptime(val.date, '%Y-%M-%d') ==  datetime.datetime.today() :
+        if val.date ==  datetime.date.today() :
+            ShowToday.append(val)
+        # elif datetime.datetime.strptime(val.date, '%Y-%M-%d') >  datetime.datetime.today() :
+        elif val.date >  datetime.date.today() :
+            ShowFuture.append(val)
+
+
+    context={
+        "today_posts":ShowToday ,
+        "future_posts":ShowFuture 
+        }
+    
+    return render(request, "appointments.html", context)
+
+def edit(request,id):
+    posting = Posts.objects.filter(id = id)[0]
+    context={
+        'posts': posting
+    }
+
+    return render(request,"appt_form.html",context)
